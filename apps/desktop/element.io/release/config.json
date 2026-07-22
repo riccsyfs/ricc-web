@@ -3,7 +3,8 @@
   "bug_report_endpoint_url": "https://rageshakes.element.io/api/submit",
   "default_server_config": {
     "m.homeserver": {
-      "base_url": "https://mozilla.modular.im"
+      "base_url": "https://mozilla.modular.im",
+       "server_name": "mozilla.org"
     },
     "m.identity_server": {
       "base_url": "https://vector.im"

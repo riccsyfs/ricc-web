@@ -46,7 +46,9 @@ const DefaultWelcome: React.FC<Props> = ({ serverConfig }) => {
         });
         // We do not use isSignInWithQRAvailable as we only need rendezvous at this point and are likely to be logging
         // into a different server than this one, so whether this one supports DAG is irrelevant.
-        return tempClient.doesServerSupportUnstableFeature("org.matrix.msc4108");
+        return tempClient.doesServerSupportUnstableFeature(
+            "org.matrix.msc4108",
+        );
     }, [serverConfig, isQrLoginEnabled]);
 
     const loading = isQrLoginEnabled && showQrButton === undefined;
@@ -58,16 +60,24 @@ const DefaultWelcome: React.FC<Props> = ({ serverConfig }) => {
         body = (
             <div className="mx_DefaultWelcome_buttons">
                 {showQrButton && (
-                    <Button as="a" href="#/qr_login" kind="primary" size="md" Icon={QrCodeIcon}>
+                    <Button
+                        as="a"
+                        href="#/qr_login"
+                        kind="primary"
+                        size="md"
+                        Icon={QrCodeIcon}
+                    >
                         {_t("auth|sign_in_with_qr")}
                     </Button>
                 )}
                 <Button as="a" href="#/login" kind="primary" size="md">
-                    {showQrButton ? _t("auth|sign_in_manually") : _t("action|sign_in")}
+                    {showQrButton
+                        ? _t("auth|sign_in_manually")
+                        : _t("action|sign_in")}
                 </Button>
-                <Button as="a" href="#/register" kind="secondary" size="md">
+                {/* <Button as="a" href="#/register" kind="secondary" size="md">
                     {_t("action|create_account")}
-                </Button>
+                </Button> */}
                 {showGuestFunctions && (
                     <Button as="a" href="#/directory" kind="tertiary" size="md">
                         {_t("action|explore_rooms")}
@@ -79,13 +89,22 @@ const DefaultWelcome: React.FC<Props> = ({ serverConfig }) => {
 
     return (
         <div className="mx_DefaultWelcome">
-            <a href={branding.get("logo_link_url")} target="_blank" rel="noopener" className="mx_DefaultWelcome_logo">
+            <a
+                href={branding.get("logo_link_url")}
+                target="_blank"
+                rel="noopener"
+                className="mx_DefaultWelcome_logo"
+            >
                 <img src={logoUrl} alt={brand} />
             </a>
             <Heading as="h1" weight="semibold">
-                {isElement ? _t("welcome|title_element") : _t("welcome|title_generic", { brand })}
+                {isElement
+                    ? _t("welcome|title_element")
+                    : _t("welcome|title_generic", { brand })}
             </Heading>
-            {isElement && <Text size="md">{_t("welcome|tagline_element")}</Text>}
+            {isElement && (
+                <Text size="md">{_t("welcome|tagline_element")}</Text>
+            )}
 
             {body}
         </div>

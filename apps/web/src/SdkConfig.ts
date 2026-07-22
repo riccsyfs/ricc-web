@@ -17,9 +17,9 @@ import ElementDesktopLogoSvg from "../res/img/element-desktop-logo.svg";
 
 // see element-web config.md for docs, or the IConfigOptions interface for dev docs
 export const DEFAULTS = {
-    brand: "Element",
+    brand: "RICC",
     branding: {
-        logo_link_url: "https://element.io",
+        logo_link_url: "https://chat.mozilla.org",
         auth_header_logo_url: "themes/element/img/logos/element-logo.svg",
         welcome_background_url: "themes/element/img/backgrounds/lake.jpg",
     },
@@ -36,7 +36,7 @@ export const DEFAULTS = {
         preferred_domain: "meet.element.io",
     },
     element_call: {
-        brand: "Element Call",
+        brand: "RICC Call",
     },
 
     // @ts-ignore - we deliberately use the camelCase version here so we trigger

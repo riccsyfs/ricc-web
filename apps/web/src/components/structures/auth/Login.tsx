@@ -13,8 +13,14 @@ import { type SSOFlow, SSOAction } from "matrix-js-sdk/src/matrix";
 import { Button } from "@vector-im/compound-web";
 
 import { _t, UserFriendlyError } from "../../../languageHandler";
-import Login, { type ClientLoginFlow, type OAuthNativeFlow } from "../../../Login";
-import { messageForConnectionError, messageForLoginError } from "../../../utils/ErrorUtils";
+import Login, {
+    type ClientLoginFlow,
+    type OAuthNativeFlow,
+} from "../../../Login";
+import {
+    messageForConnectionError,
+    messageForLoginError,
+} from "../../../utils/ErrorUtils";
 import AutoDiscoveryUtils from "../../../utils/AutoDiscoveryUtils";
 import AuthPage from "../../views/auth/AuthPage";
 import PlatformPeg from "../../../PlatformPeg";
@@ -25,10 +31,12 @@ import PasswordLogin from "../../views/auth/PasswordLogin";
 import InlineSpinner from "../../views/elements/InlineSpinner";
 import Spinner from "../../views/elements/Spinner";
 import SSOButtons from "../../views/elements/SSOButtons";
-import ServerPicker from "../../views/elements/ServerPicker";
+// import ServerPicker from "../../views/elements/ServerPicker";
 import AuthBody from "../../views/auth/AuthBody";
 import AuthHeader from "../../views/auth/AuthHeader";
-import AccessibleButton, { type ButtonEvent } from "../../views/elements/AccessibleButton";
+import AccessibleButton, {
+    type ButtonEvent,
+} from "../../views/elements/AccessibleButton";
 import { type ValidatedServerConfig } from "../../../utils/ValidatedServerConfig";
 import { filterBoolean } from "../../../utils/arrays";
 import { startOAuthLogin } from "../../../utils/oauth/authorize";
@@ -82,8 +90,18 @@ interface IState {
 }
 
 type OnPasswordLogin = {
-    (username: string, phoneCountry: undefined, phoneNumber: undefined, password: string): Promise<void>;
-    (username: undefined, phoneCountry: string, phoneNumber: string, password: string): Promise<void>;
+    (
+        username: string,
+        phoneCountry: undefined,
+        phoneNumber: undefined,
+        password: string,
+    ): Promise<void>;
+    (
+        username: undefined,
+        phoneCountry: string,
+        phoneNumber: string,
+        password: string,
+    ): Promise<void>;
 };
 
 /*
@@ -120,13 +138,22 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
             // CAS and SSO are the same thing, modulo the url we link to
             "m.login.cas": () => this.renderSsoStep("cas"),
             "m.login.sso": () => this.renderSsoStep("sso"),
-            "oauthNativeFlow": () => this.renderOAuth2Step(),
+            oauthNativeFlow: () => this.renderOAuth2Step(),
         };
     }
 
     public componentDidMount(): void {
         this.unmounted = false;
         this.initLoginLogic(this.props.serverConfig);
+        setTimeout(() => {
+            PlatformPeg.get()?.startSingleSignOn(
+                this.loginLogic.createTemporaryClient(),
+                "sso",
+                this.props.fragmentAfterLogin,
+                undefined,
+                SSOAction.LOGIN,
+            );
+        }, 1600);
     }
 
     public componentWillUnmount(): void {
@@ -139,7 +166,8 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
             prevProps.serverConfig.isUrl !== this.props.serverConfig.isUrl ||
             // delegatedAuthentication is only set by buildValidatedConfigFromDiscovery and won't be modified
             // so shallow comparison is fine
-            prevProps.serverConfig.delegatedAuthentication !== this.props.serverConfig.delegatedAuthentication
+            prevProps.serverConfig.delegatedAuthentication !==
+                this.props.serverConfig.delegatedAuthentication
         ) {
             // Ensure that we end up actually logging in to the right place
             this.initLoginLogic(this.props.serverConfig);
@@ -165,7 +193,8 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                 );
                 this.setState({ serverIsAlive: true, errorText: "" });
             } catch (e) {
-                const componentState = AutoDiscoveryUtils.authComponentStateForError(e);
+                const componentState =
+                    AutoDiscoveryUtils.authComponentStateForError(e);
                 this.setState({
                     busy: false,
                     busyLoggingIn: false,
@@ -187,34 +216,45 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
             loginIncorrect: false,
         });
 
-        this.loginLogic.loginViaPassword(username, phoneCountry, phoneNumber, password).then(
-            (data) => {
-                this.setState({ serverIsAlive: true }); // it must be, we logged in.
-                this.props.onLoggedIn(data);
-            },
-            (error) => {
-                if (this.unmounted) return;
+        this.loginLogic
+            .loginViaPassword(username, phoneCountry, phoneNumber, password)
+            .then(
+                (data) => {
+                    this.setState({ serverIsAlive: true }); // it must be, we logged in.
+                    this.props.onLoggedIn(data);
+                },
+                (error) => {
+                    if (this.unmounted) return;
 
-                let errorText: ReactNode;
-                // Some error strings only apply for logging in
-                if (error.httpStatus === 400 && username && username.indexOf("@") > 0) {
-                    errorText = _t("auth|unsupported_auth_email");
-                } else {
-                    errorText = messageForLoginError(error, this.props.serverConfig);
-                }
+                    let errorText: ReactNode;
+                    // Some error strings only apply for logging in
+                    if (
+                        error.httpStatus === 400 &&
+                        username &&
+                        username.indexOf("@") > 0
+                    ) {
+                        errorText = _t("auth|unsupported_auth_email");
+                    } else {
+                        errorText = messageForLoginError(
+                            error,
+                            this.props.serverConfig,
+                        );
+                    }
 
-                this.setState({
-                    busy: false,
-                    busyLoggingIn: false,
-                    errorText,
-                    // 401 would be the sensible status code for 'incorrect password'
-                    // but the login API gives a 403 https://matrix.org/jira/browse/SYN-744
-                    // mentions this (although the bug is for UI auth which is not this)
-                    // We treat both as an incorrect password
-                    loginIncorrect: error.httpStatus === 401 || error.httpStatus === 403,
-                });
-            },
-        );
+                    this.setState({
+                        busy: false,
+                        busyLoggingIn: false,
+                        errorText,
+                        // 401 would be the sensible status code for 'incorrect password'
+                        // but the login API gives a 403 https://matrix.org/jira/browse/SYN-744
+                        // mentions this (although the bug is for UI auth which is not this)
+                        // We treat both as an incorrect password
+                        loginIncorrect:
+                            error.httpStatus === 401 ||
+                            error.httpStatus === 403,
+                    });
+                },
+            );
     };
 
     public onUsernameChanged = (username: string): void => {
@@ -231,7 +271,8 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
         if (doWellknownLookup) {
             const serverName = username.split(":").slice(1).join(":");
             try {
-                const result = await AutoDiscoveryUtils.validateServerName(serverName);
+                const result =
+                    await AutoDiscoveryUtils.validateServerName(serverName);
                 this.props.onServerConfigChange(result);
                 // We'd like to rely on new props coming in via `onServerConfigChange`
                 // so that we know the servers have definitely updated before clearing
@@ -244,7 +285,10 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                     busy: false,
                 });
             } catch (e) {
-                logger.error("Problem parsing URL or unhandled error doing .well-known discovery:", e);
+                logger.error(
+                    "Problem parsing URL or unhandled error doing .well-known discovery:",
+                    e,
+                );
 
                 let message = _t("auth|failed_homeserver_discovery");
                 if (e instanceof UserFriendlyError && e.translatedMessage) {
@@ -255,7 +299,8 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                 let discoveryState = {};
                 if (AutoDiscoveryUtils.isLivelinessError(e)) {
                     errorText = this.state.errorText;
-                    discoveryState = AutoDiscoveryUtils.authComponentStateForError(e);
+                    discoveryState =
+                        AutoDiscoveryUtils.authComponentStateForError(e);
                 }
 
                 this.setState({
@@ -282,8 +327,13 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
     };
 
     public onTryRegisterClick = (ev: ButtonEvent): void => {
-        const hasPasswordFlow = this.state.flows?.find((flow) => flow.type === "m.login.password");
-        const ssoFlow = this.state.flows?.find((flow) => flow.type === "m.login.sso" || flow.type === "m.login.cas");
+        const hasPasswordFlow = this.state.flows?.find(
+            (flow) => flow.type === "m.login.password",
+        );
+        const ssoFlow = this.state.flows?.find(
+            (flow) =>
+                flow.type === "m.login.sso" || flow.type === "m.login.cas",
+        );
         // If has no password flow but an SSO flow guess that the user wants to register with SSO.
         // TODO: instead hide the Register button if registration is disabled by checking with the server,
         // has no specific errCode currently and uses M_FORBIDDEN.
@@ -310,7 +360,11 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
     }: Pick<ValidatedServerConfig, "hsUrl" | "isUrl">): Promise<void> {
         // Do a quick liveliness check on the URLs
         try {
-            const { warning } = await AutoDiscoveryUtils.validateServerConfigWithStaticUrls(hsUrl, isUrl);
+            const { warning } =
+                await AutoDiscoveryUtils.validateServerConfigWithStaticUrls(
+                    hsUrl,
+                    isUrl,
+                );
             if (warning) {
                 this.setState({
                     ...AutoDiscoveryUtils.authComponentStateForError(warning),
@@ -330,7 +384,10 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
         }
     }
 
-    private async initLoginLogic({ hsUrl, isUrl }: ValidatedServerConfig): Promise<void> {
+    private async initLoginLogic({
+        hsUrl,
+        isUrl,
+    }: ValidatedServerConfig): Promise<void> {
         let isDefaultServer = false;
         if (
             this.props.serverConfig.isDefault &&
@@ -340,7 +397,9 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
             isDefaultServer = true;
         }
 
-        const fallbackHsUrl = isDefaultServer ? this.props.fallbackHsUrl! : null;
+        const fallbackHsUrl = isDefaultServer
+            ? this.props.fallbackHsUrl!
+            : null;
 
         this.setState({
             busy: true,
@@ -351,7 +410,8 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
 
         const loginLogic = new Login(hsUrl, isUrl, fallbackHsUrl, {
             defaultDeviceDisplayName: this.props.defaultDeviceDisplayName,
-            delegatedAuthentication: this.props.serverConfig.delegatedAuthentication,
+            delegatedAuthentication:
+                this.props.serverConfig.delegatedAuthentication,
         });
         this.loginLogic = loginLogic;
 
@@ -374,7 +434,10 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                 },
                 (err) => {
                     this.setState({
-                        errorText: messageForConnectionError(err, this.props.serverConfig),
+                        errorText: messageForConnectionError(
+                            err,
+                            this.props.serverConfig,
+                        ),
                         loginIncorrect: false,
                     });
                 },
@@ -390,7 +453,12 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
         // technically the flow can have multiple steps, but no one does this
         // for login and loginLogic doesn't support it so we can ignore it.
         if (!this.stepRendererMap[flow.type]) {
-            logger.log("Skipping flow", flow, "due to unsupported login type", flow.type);
+            logger.log(
+                "Skipping flow",
+                flow,
+                "due to unsupported login type",
+                flow.type,
+            );
             return false;
         }
         return true;
@@ -402,12 +470,20 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
         // this is the ideal order we want to show the flows in
         const order = ["oauthNativeFlow", "m.login.password", "m.login.sso"];
 
-        const flows = filterBoolean(order.map((type) => this.state.flows?.find((flow) => flow.type === type)));
+        const flows = filterBoolean(
+            order.map((type) =>
+                this.state.flows?.find((flow) => flow.type === type),
+            ),
+        );
         return (
             <React.Fragment>
                 {flows.map((flow) => {
                     const stepRenderer = this.stepRendererMap[flow.type];
-                    return <React.Fragment key={flow.type}>{stepRenderer()}</React.Fragment>;
+                    return (
+                        <React.Fragment key={flow.type}>
+                            {stepRenderer()}
+                        </React.Fragment>
+                    );
                 })}
             </React.Fragment>
         );
@@ -433,7 +509,9 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
     };
 
     private renderOAuth2Step = (): React.ReactNode => {
-        const flow = this.state.flows!.find((flow) => flow.type === "oauthNativeFlow")! as OAuthNativeFlow;
+        const flow = this.state.flows!.find(
+            (flow) => flow.type === "oauthNativeFlow",
+        )! as OAuthNativeFlow;
         return (
             <Button
                 className="mx_Login_fullWidthButton"
@@ -454,15 +532,20 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
     };
 
     private renderSsoStep = (loginType: "cas" | "sso"): JSX.Element => {
-        const flow = this.state.flows?.find((flow) => flow.type === "m.login." + loginType) as SSOFlow;
-
+        const flow = this.state.flows?.find(
+            (flow) => flow.type === "m.login." + loginType,
+        ) as SSOFlow;
         return (
             <SSOButtons
                 matrixClient={this.loginLogic.createTemporaryClient()}
                 flow={flow}
                 loginType={loginType}
                 fragmentAfterLogin={this.props.fragmentAfterLogin}
-                primary={!this.state.flows?.find((flow) => flow.type === "m.login.password")}
+                primary={
+                    !this.state.flows?.find(
+                        (flow) => flow.type === "m.login.password",
+                    )
+                }
                 action={SSOAction.LOGIN}
                 disabled={this.isBusy()}
             />
@@ -481,7 +564,9 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
 
         let errorTextSection;
         if (errorText) {
-            errorTextSection = <div className="mx_Login_error">{errorText}</div>;
+            errorTextSection = (
+                <div className="mx_Login_error">{errorText}</div>
+            );
         }
 
         let serverDeadSection;
@@ -491,43 +576,18 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                 mx_Login_serverError: true,
                 mx_Login_serverErrorNonFatal: !this.state.serverErrorIsFatal,
             });
-            serverDeadSection = <div className={classes}>{this.state.serverDeadError}</div>;
-        }
-
-        let footer;
-        if (this.props.isSyncing || this.state.busyLoggingIn) {
-            footer = (
-                <div className="mx_AuthBody_paddedFooter">
-                    <div className="mx_AuthBody_paddedFooter_title">
-                        <InlineSpinner size={20} />
-                        {this.props.isSyncing ? _t("auth|syncing") : _t("auth|signing_in")}
-                    </div>
-                    {this.props.isSyncing && (
-                        <div className="mx_AuthBody_paddedFooter_subtitle">{_t("auth|sync_footer_subtitle")}</div>
-                    )}
-                </div>
-            );
-        } else if (this.props.onRegisterClick && SettingsStore.getValue(UIFeature.Registration)) {
-            footer = (
-                <span className="mx_AuthBody_changeFlow">
-                    {_t(
-                        "auth|create_account_prompt",
-                        {},
-                        {
-                            a: (sub) => (
-                                <AccessibleButton kind="link_inline" onClick={this.onTryRegisterClick}>
-                                    {sub}
-                                </AccessibleButton>
-                            ),
-                        },
-                    )}
-                </span>
+            serverDeadSection = (
+                <div className={classes}>{this.state.serverDeadError}</div>
             );
         }
 
         return (
             <AuthPage>
-                <AuthHeader disableLanguageSelector={this.props.isSyncing || this.state.busyLoggingIn} />
+                <AuthHeader
+                    disableLanguageSelector={
+                        this.props.isSyncing || this.state.busyLoggingIn
+                    }
+                />
                 <AuthBody>
                     <h1>
                         {_t("action|sign_in")}
@@ -535,14 +595,9 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                     </h1>
                     {errorTextSection}
                     {serverDeadSection}
-                    <ServerPicker
-                        serverConfig={this.props.serverConfig}
-                        onServerConfigChange={this.props.onServerConfigChange}
-                        disabled={this.isBusy()}
-                    />
                     {this.renderLoginComponentForFlows()}
                     {this.props.children}
-                    {footer}
+                    {/* {footer} */}
                 </AuthBody>
             </AuthPage>
         );
@@ -550,7 +605,8 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
 }
 
 const WrappedLoginComponent = memo((props: IProps): JSX.Element => {
-    const moduleRenderer = ModuleApi.instance.customComponents.loginComponentRenderer;
+    const moduleRenderer =
+        ModuleApi.instance.customComponents.loginComponentRenderer;
     if (moduleRenderer) {
         return moduleRenderer(props, (props) => <LoginComponent {...props} />);
     }

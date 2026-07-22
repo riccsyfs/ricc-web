@@ -24,19 +24,17 @@ import {
 import AutoDiscoveryUtils from "../../../utils/AutoDiscoveryUtils";
 import AuthPage from "../../views/auth/AuthPage";
 import PlatformPeg from "../../../PlatformPeg";
-import SettingsStore from "../../../settings/SettingsStore";
-import { UIFeature } from "../../../settings/UIFeature";
+// import SettingsStore from "../../../settings/SettingsStore";
+// import { UIFeature } from "../../../settings/UIFeature";
 import { type IMatrixClientCreds } from "../../../utils/createMatrixClient";
 import PasswordLogin from "../../views/auth/PasswordLogin";
-import InlineSpinner from "../../views/elements/InlineSpinner";
+// import InlineSpinner from "../../views/elements/InlineSpinner";
 import Spinner from "../../views/elements/Spinner";
 import SSOButtons from "../../views/elements/SSOButtons";
 // import ServerPicker from "../../views/elements/ServerPicker";
 import AuthBody from "../../views/auth/AuthBody";
 import AuthHeader from "../../views/auth/AuthHeader";
-import AccessibleButton, {
-    type ButtonEvent,
-} from "../../views/elements/AccessibleButton";
+import { type ButtonEvent } from "../../views/elements/AccessibleButton";
 import { type ValidatedServerConfig } from "../../../utils/ValidatedServerConfig";
 import { filterBoolean } from "../../../utils/arrays";
 import { startOAuthLogin } from "../../../utils/oauth/authorize";

@@ -1,6 +1,6 @@
 {
   "brand": "RICC",
-  "default_country_code": "GB",
+  "default_country_code": "CN",
   "default_federate": true,
   "default_server_config": {
     "m.homeserver": {
@@ -42,7 +42,7 @@
   "room_directory": {
     "servers": [
       "mozilla.org",
-      "matrix.org"
+      "gitter.im"
     ]
   },
   "setting_defaults": {

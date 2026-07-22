@@ -7,6 +7,10 @@
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=element-web&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=element-web)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=element-web&metric=bugs)](https://sonarcloud.io/summary/new_code?id=element-web)
 
+1. apps/web/ : Building From Source,
+2. move webpack to apps/desktop/depolys/elementversion
+3. pack webpack to asar, using pack.ts
+
 # Element
 
 Element (formerly known as Vector and Riot) is a Matrix web & desktop client built using the [Matrix

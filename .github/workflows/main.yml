@@ -21,12 +21,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7       
+        uses: actions/setup-node@v4
         with:
-          cache: "pnpm"
+          node-version: '24'
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9        
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          cache: "pnpm"
 
       # ✨ 修复点 1：在执行任何脚本前，必须先安装项目依赖
 
@@ -62,10 +65,11 @@ jobs:
         run: pnpm build:64 -w msi -- --publish never
         working-directory: apps/desktop
 
+          
       - name: Upload Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-            name: production-files-win
-            path: |
-                apps/desktop/dist
-            retention-days: 1
+          name: production-win
+          path: |
+              apps/desktop/dist
+          retention-days: 1

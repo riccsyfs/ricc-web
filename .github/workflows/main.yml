@@ -13,7 +13,8 @@ jobs:
     name: Build Windows App
     runs-on: windows-2025
     env:
-      SIGNTOOL_PATH: 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x86/signtool.exe'
+      # 建议切换为 x64 版本的 signtool 避免 32 位内存溢出
+      SIGNTOOL_PATH: 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe'
     
     steps:
       - name: Check out repository code
@@ -22,15 +23,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24' # 指定你需要的 Node 版本
+          node-version: '24'
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: latest
 
+      # ✨ 修复点 1：在执行任何脚本前，必须先安装项目依赖
+      - name: Install Dependencies
+        run: pnpm install
+
+      # ✨ 修复点 2：如果是 TS 脚本，推荐通过 pnpm 依赖内的工具或 package.json 脚本执行
+      # 如果你的 package.json 里面有 "pack": "ts-node scripts/pack.ts"，推荐改为：pnpm run pack
       - name: Run Pack Script
-        run:  node scripts/pack.ts
+        run: pnpm node scripts/pack.ts
         working-directory: apps/desktop
 
       - name: Build MSI Package

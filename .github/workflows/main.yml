@@ -1,0 +1,25 @@
+
+defaults:
+    run:
+        shell: powershell
+on: 
+    push:
+        branches: [develop, master]
+jobs:
+    build:
+        name: Build Windows ${{ inputs.arch }}
+        runs-on: windows-2025
+        env:
+            SIGNTOOL_PATH: "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x86/signtool.exe"
+
+      steps:
+           - name: "a"
+              working-directory: apps/desktop
+              run: pnpm run node scripts/pack.ts
+
+              
+           - name: "b"
+              working-directory: apps/desktop
+              run: pnpm run build --publish never -w msi
+              shell: bash
+              

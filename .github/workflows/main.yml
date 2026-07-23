@@ -31,8 +31,32 @@ jobs:
           version: latest
 
       # ✨ 修复点 1：在执行任何脚本前，必须先安装项目依赖
-      - name: Install Dependencies
+
+
+      - name: Install web
         run: pnpm install
+        working-directory: apps/web
+
+      - name: Install nx web
+        run: pnpm install nx@latest -D
+        working-directory: apps/web
+
+      - name: Install desktop
+        run: pnpm install
+        working-directory: apps/desktop
+
+      - name: Install nx desktop
+        run: pnpm install nx@latest -D
+        working-directory: apps/desktop
+
+      - name: build  web
+        run: pnpm build
+        working-directory: apps/web
+        shell: bash
+
+      - name: build  desktop
+        run: pnpm build
+        working-directory: apps/desktop
 
       # ✨ 修复点 2：如果是 TS 脚本，推荐通过 pnpm 依赖内的工具或 package.json 脚本执行
       # 如果你的 package.json 里面有 "pack": "ts-node scripts/pack.ts"，推荐改为：pnpm run pack
@@ -41,5 +65,5 @@ jobs:
         working-directory: apps/desktop
 
       - name: Build MSI Package
-        run: pnpm run build --publish never -w msi
+        run: pnpm run build:64 --publish never -w msi
         working-directory: apps/desktop

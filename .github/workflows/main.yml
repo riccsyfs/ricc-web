@@ -29,7 +29,6 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: latest
-          cache: "pnpm"
 
       # ✨ 修复点 1：在执行任何脚本前，必须先安装项目依赖
 

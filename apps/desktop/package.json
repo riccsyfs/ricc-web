@@ -106,5 +106,15 @@
         "includedScripts": [
             "lint:types"
         ]
+    },
+      "build": {
+        "appId": "im.ricc.app",
+
+    "win": {
+      "target": ["nsis"],
+      "publisherName": "Your Name or Company",
+      "certificateFile": "./certs/developer-cert.pfx",
+      "certificatePassword": "YourCertificatePassword"
     }
+  }
 }

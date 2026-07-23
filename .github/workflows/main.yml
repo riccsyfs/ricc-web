@@ -16,9 +16,9 @@ jobs:
     steps:
       - name: a
         run: pnpm run node scripts/pack.ts
-        working-directory: apps/desktop
-
+        working-directory: "apps\\desktop" 
+        
       - name: b
         run: pnpm run build --publish never -w msi
         shell: bash
-        working-directory: apps/desktop
+        working-directory: "apps\\desktop" 

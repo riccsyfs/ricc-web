@@ -64,6 +64,7 @@
         "electron-window-state": "^5.0.3",
         "matrix-seshat": "^4.3.0",
         "minimist": "^1.2.6",
+        "nx": "23.1.0",
         "png-to-ico": "^3.0.0",
         "uuid": "^14.0.0"
     },
